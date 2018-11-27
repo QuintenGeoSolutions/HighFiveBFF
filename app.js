@@ -59,6 +59,10 @@ var executeQuery = function(res,query,parameters){
     });
 };
 
+app.get('/',function(req, res){
+    res("Hello world!")
+});
+
 app.post('/', function (req, res) {
 
     var parameters = [
