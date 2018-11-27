@@ -81,7 +81,3 @@ app.post('/', function (req, res) {
     var query = "INSERT INTO [dbo].[User] (Id, CreatedAt, ModifiedAt, FirstName, LastName, Email, PhoneNumber, Sex, UserType, UserTypeOther, Organisation, WristBandNumber, Scanned) VALUES (@Id, @CreatedAt, @ModifiedAt, @FirstName, @LastName, @Email, @PhoneNumber, @Sex, @UserType, @UserTypeOther, @Organisation, @WristBandNumber, @Scanned)";
     executeQuery (res, query, parameters);
 });
-
-var server = app.listen(5000, function () {
-    console.log('Server is running..');
-});

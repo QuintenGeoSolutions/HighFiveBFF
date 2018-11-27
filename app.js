@@ -1,41 +1,87 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const cors = require('cors');
+const express = require('express');
+const app = express();
+const bodyParser = require("body-parser");
+const sql = require('mssql');
+const uuidv1 = require('uuid/v1');
+var dateTime = require('node-datetime');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const config = {
+    user: 'highfiveadmin',
+    password: 'GSxvG3HY3cjMGLUn',
+    server: 'highfiveappdb.database.windows.net',
+    database: 'HighFiveAppDb',
+    encrypt:true
+};
+/** bodyParser.urlencoded(options)
+ * Parses the text as URL encoded data (which is how browsers tend to send form data from regular forms set to POST)
+ * and exposes the resulting object (containing the keys and values) on req.body
+ */
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 
-var app = express();
+/**bodyParser.json(options)
+ * Parses the text as JSON and exposes the resulting object on req.body.
+ */
+app.use(bodyParser.json());
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.use(cors());
+app.options('*', cors());
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+var executeQuery = function(res,query,parameters){
+    sql.connect(config,function(err){
+        if(err){
+            console.log("there is a database connection error -> "+err);
+            res.send(err);
+        }
+        else{
+            // create request object
+            var request = new sql.Request();
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+            // Add parameters
+            parameters.forEach(function(p) {
+                request.input(p.name, p.sqltype, p.value);
+            });
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+            // query to the database
+            request.query(query,function(err,result){
+                if(err){
+                    console.log("error while querying database -> "+err);
+                    res.send(err);
+                }
+                else{
+                    res.send(result);
+                    sql.close();
+                }
+            });
+        }
+    });
+};
+
+
+app.post('/', function (req, res) {
+
+    var parameters = [
+        { name: 'Id', sqltype: sql.NVarChar, value: uuidv1()},
+        { name: 'CreatedAt', sqltype: sql.DateTimeOffset(7), value: new Date()},
+        { name: 'ModifiedAt', sqltype: sql.DateTimeOffset(7), value: new Date()},
+        { name: 'FirstName', sqltype: sql.NVarChar, value: req.body.FirstName},
+        { name: 'LastName', sqltype: sql.NVarChar, value: req.body.LastName},
+        { name: 'Email', sqltype: sql.NVarChar, value: req.body.Email},
+        { name: 'PhoneNumber', sqltype: sql.NVarChar, value: req.body.PhoneNumber},
+        { name: 'Sex', sqltype: sql.NVarChar, value: req.body.Sex},
+        { name: 'UserType', sqltype: sql.Int, value: req.body.UserType},
+        { name: 'UserTypeOther', sqltype: sql.NVarChar, value: req.body.UserTypeOther},
+        { name: 'Organisation', sqltype: sql.NVarChar, value: req.body.Organisation},
+        { name: 'WristBandNumber', sqltype: sql.NVarChar, value: req.body.WristBandNumber},
+        { name: 'Scanned', sqltype: sql.Bit, value: false},
+    ];
+
+    var query = "INSERT INTO [dbo].[User] (Id, CreatedAt, ModifiedAt, FirstName, LastName, Email, PhoneNumber, Sex, UserType, UserTypeOther, Organisation, WristBandNumber, Scanned) VALUES (@Id, @CreatedAt, @ModifiedAt, @FirstName, @LastName, @Email, @PhoneNumber, @Sex, @UserType, @UserTypeOther, @Organisation, @WristBandNumber, @Scanned)";
+    executeQuery (res, query, parameters);
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+var server = app.listen(process.env.PORT ||5000, function () {
+    console.log('Server is running..');
 });
-
-module.exports = app;
