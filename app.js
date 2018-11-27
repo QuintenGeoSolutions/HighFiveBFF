@@ -4,7 +4,6 @@ const app = express();
 const bodyParser = require("body-parser");
 const sql = require('mssql');
 const uuidv1 = require('uuid/v1');
-var dateTime = require('node-datetime');
 
 const config = {
     user: 'highfiveadmin',
