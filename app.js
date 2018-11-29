@@ -71,7 +71,7 @@ app.post('/', function (req, res) {
         {name: 'FirstName', sqltype: sql.NVarChar, value: req.body.FirstName},
         {name: 'LastName', sqltype: sql.NVarChar, value: req.body.LastName},
         {name: 'Email', sqltype: sql.NVarChar, value: req.body.Email},
-        {name: 'PhoneNumber', sqltype: sql.NVarChar, value: req.body.PhoneNumber},
+        {name: 'PhoneNumber', sqltype: sql.NVarChar, value: req.body.PhoneNumber||''},
         {name: 'Sex', sqltype: sql.NVarChar, value: req.body.Sex},
         {name: 'UserType', sqltype: sql.Int, value: req.body.UserType},
         {name: 'UserTypeOther', sqltype: sql.NVarChar, value: req.body.UserTypeOther},
